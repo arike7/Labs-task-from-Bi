@@ -1,0 +1,91 @@
+---
+- name: Install PostgreSQL 16 and Patroni
+  dnf:
+    name:
+      - postgresql16-server
+      - python3-pip
+      - patroni
+      - patroni-etcd
+    state: present
+
+- name: Initialize PostgreSQL
+  command: /usr/pgsql-16/bin/postgresql-16-setup initdb
+  args:
+    creates: /var/lib/pgsql/16/data/postgresql.conf
+
+- name: Configure Patroni
+  template:
+    src: patroni.yml.j2
+    dest: /etc/patroni/patroni.yml
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  notify: restart patroni
+
+- name: Start and enable Patroni
+  service:
+    name: patroni
+    state: started
+    enabled: yes
+
+- name: Set postgres password
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    name: postgres
+    password: "{{ postgres_password }}"
+    state: present
+
+- name: Create test_user
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    name: test_user
+    password: "{{ test_user_password }}"
+    state: present
+    login: yes
+
+- name: Create test_db1
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    name: test_db1
+    owner: test_user
+    state: present
+
+- name: Allow test_user to connect from any host
+  become: yes
+  become_user: postgres
+  postgresql_pg_hba:
+    dest: /var/lib/pgsql/16/data/pg_hba.conf
+    contype: host
+    users: test_user
+    databases: test_db1
+    method: md5
+    source: 0.0.0.0/0
+    state: present
+  notify: reload postgresql
+
+- name: Install pg_stat_statements
+  become: yes
+  become_user: postgres
+  postgresql_ext:
+    name: pg_stat_statements
+    db: test_db1
+    state: present
+
+- name: Enable pg_stat_statements
+  become: yes
+  become_user: postgres
+  postgresql_set:
+    name: shared_preload_libraries
+    value: pg_stat_statements
+
+- name: Create svc_monitoring user
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    name: svc_monitoring
+    password: "{{ svc_monitoring_password }}"
+    state: present
+    role_attr_flags: NOSUPERUSER,NOCREATEDB,NOCREATEROLE

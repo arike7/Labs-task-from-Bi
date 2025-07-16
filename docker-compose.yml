@@ -1,0 +1,28 @@
+version: '3'
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: always
+  node_exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    restart: always
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    environment:
+      - DATA_SOURCE_NAME=postgresql://svc_monitoring:monitorpassword@192.168.56.102:5432/test_db1?sslmode=disable
+    ports:
+      - "9187:9187"
+    restart: always
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: always

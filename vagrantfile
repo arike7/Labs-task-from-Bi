@@ -1,0 +1,70 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "oraclelinux/9"
+  config.vm.box_url = "https://oracle.github.io/vagrant-projects/boxes/oraclelinux/9.json"
+
+  # VM etcd01
+  config.vm.define "etcd01" do |etcd01|
+    etcd01.vm.hostname = "etcd01"
+    etcd01.vm.network "private_network", ip: "192.168.56.101"
+    etcd01.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+  end
+
+  # VM pgsql01
+  config.vm.define "pgsql01" do |pgsql01|
+    pgsql01.vm.hostname = "pgsql01"
+    pgsql1.vm.network "private_network", ip: "192.168.56.102"
+    pgsql01.vm.network "forwarded_port", guest: 5432, host: 5432
+    pgsql01.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+    end
+  end
+
+  # VM pgsql02
+  config.vm.define "pgsql02" do |pgsql02|
+    pgsql02.vm.hostname = "pgsql02"
+    pgsql2.vm.network "private_network", ip: "192.168.56.103"
+    pgsql02.vm.network "forwarded_port", guest: 5432, host: 5433
+    pgsql02.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+    end
+  end
+
+  # VM docker01
+  config.vm.define "docker01" do |docker01|
+    docker01.vm.hostname = "docker01"
+    docker.vm.network "private_network", ip: "192.168.56.104"
+    docker01.vm.network "forwarded_port", guest: 9090, host: 9090
+    docker01.vm.network "forwarded_port", guest: 3000, host: 3000
+    docker01.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+    end
+    # Install Ansible
+    docker01.vm.provision "shell", inline: <<-SHELL
+      dnf install -y ansible
+      useradd -m -s /bin/bash ansible
+      mkdir -p /home/ansible/.ssh
+      echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFv1AE+CK3IgqEO0+0jBgf7O3FmAM0/Gt9gc7+mVdJsJtxjh8LBQ5fyMn0MDO6plfjgE5bHbTH+zZzgqGgMKtwrnR8fk/+kCkTggCHldQVdS+TvQkQ9sP2LdfkACj49OwSDQPgB2j7qWaj+0bOHWGsfbMjZNka8Kh325mrhDBKCGwqWWiogTDR1ktknLH8YNlP/0gwzN7KCRpf16ePf5KNM/ydXqtEe+F/js/3bziyp2ofsF3eo9rTTDEoYwkAwop/QnzdvTuVp/ZQRvvb1d4ALOTZJ5YaEzr61KnoYbZAnyo4xmrm2USh2OsoVrm2P9uaCD/cXveSJehyV8xkpIxqr2AhENasni72SJ87tvMxc/3Q/wwLd2HbZ1dGUJ3UgNswkrWZ397I2Mdg3QVWNtoU2degQ6SWJ2jg8oLUelgdOyk0AlCP9CZvs+RB6SrwuLif69vxLBxz8znnJMt9ZoFkWP5lbbtztGqVa+usd0/uioJFgAZibTpijwi3+E/36i0= zaker@DESKTOP-UR1FMMS" >> /home/ansible/.ssh/authorized_keys
+      chown -R ansible:ansible /home/ansible/.ssh
+      chmod 700 /home/ansible/.ssh
+      chmod 600 /home/ansible/.ssh/authorized_keys
+      echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/ansible
+    SHELL
+  end
+
+  # Provision all VMs with ansible user and SSH key
+  config.vm.provision "shell", inline: <<-SHELL
+    useradd -m -s /bin/bash ansible
+    mkdir -p /home/ansible/.ssh
+    echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFv1AE+CK3IgqEO0+0jBgf7O3FmAM0/Gt9gc7+mVdJsJtxjh8LBQ5fyMn0MDO6plfjgE5bHbTH+zZzgqGgMKtwrnR8fk/+kCkTggCHldQVdS+TvQkQ9sP2LdfkACj49OwSDQPgB2j7qWaj+0bOHWGsfbMjZNka8Kh325mrhDBKCGwqWWiogTDR1ktknLH8YNlP/0gwzN7KCRpf16ePf5KNM/ydXqtEe+F/js/3bziyp2ofsF3eo9rTTDEoYwkAwop/QnzdvTuVp/ZQRvvb1d4ALOTZJ5YaEzr61KnoYbZAnyo4xmrm2USh2OsoVrm2P9uaCD/cXveSJehyV8xkpIxqr2AhENasni72SJ87tvMxc/3Q/wwLd2HbZ1dGUJ3UgNswkrWZ397I2Mdg3QVWNtoU2degQ6SWJ2jg8oLUelgdOyk0AlCP9CZvs+RB6SrwuLif69vxLBxz8znnJMt9ZoFkWP5lbbtztGqVa+usd0/uioJFgAZibTpijwi3+E/36i0= zaker@DESKTOP-UR1FMMS" >> /home/ansible/.ssh/authorized_keys
+    chown -R ansible:ansible /home/ansible/.ssh
+    chmod 700 /home/ansible/.ssh
+    chmod 600 /home/ansible/.ssh/authorized_keys
+    echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/ansible
+  SHELL
+end

@@ -1,0 +1,12 @@
+---
+- hosts: etcd01
+  roles:
+    - etcd
+
+- hosts: pgsql01:pgsql02
+  roles:
+    - postgresql
+
+- hosts: docker01
+  roles:
+    - docker

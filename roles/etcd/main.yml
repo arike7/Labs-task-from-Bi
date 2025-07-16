@@ -1,0 +1,25 @@
+---
+- name: Install epel-release
+  dnf:
+    name: epel-release
+    state: present
+
+- name: Install etcd
+  dnf:
+    name: etcd
+    state: present
+
+- name: Configure etcd
+  template:
+    src: etcd.conf.yml.j2
+    dest: /etc/etcd/etcd.conf.yml
+    owner: etcd
+    group: etcd
+    mode: '0644'
+  notify: restart etcd
+
+- name: Start and enable etcd
+  service:
+    name: etcd
+    state: started
+    enabled: yes
