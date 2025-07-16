@@ -2,10 +2,6 @@ Vagrant.configure("2") do |config|
   config.vm.box = "oraclelinux/9"
   config.vm.box_url = "https://oracle.github.io/vagrant-projects/boxes/oraclelinux/9.json"
 
-  # Disable default Vagrant insecure key
-  config.ssh.insert_key = false
-  config.ssh.private_key_path = ['~/.vagrant.d/insecure_private_key', 'ansible_id_rsa']
-
   # VM etcd01
   config.vm.define "etcd01" do |etcd01|
     etcd01.vm.hostname = "etcd01"
@@ -48,29 +44,10 @@ Vagrant.configure("2") do |config|
       vb.memory = "2048"
       vb.cpus = 2
     end
-    # Copy private key
-    docker01.vm.provision "file", source: "ansible_id_rsa", destination: "/home/ansible/.ssh/id_rsa"
     # Install Ansible
     docker01.vm.provision "shell", inline: <<-SHELL
       dnf install -y ansible
-      useradd -m -s /bin/bash ansible
-      mkdir -p /home/ansible/.ssh
-      echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFv1AE+CK3IgqEO0+0jBgf7O3FmAM0/Gt9gc7+mVdJsJtxjh8LBQ5fyMn0MDO6plfjgE5bHbTH+zZzgqGgMKtwrnR8fk/+kCkTggCHldQVdS+TvQkQ9sP2LdfkACj49OwSDQPgB2j7qWaj+0bOHWGsfbMjZNka8Kh325mrhDBKCGwqWWiogTDR1ktknLH8YNlP/0gwzN7KCRpf16ePf5KNM/ydXqtEe+F/js/3bziyp2ofsF3eo9rTTDEoYwkAwop/QnzdvTuVp/ZQRvvb1d4ALOTZJ5YaEzr61KnoYbZAnyo4xmrm2USh2OsoVrm2P9uaCD/cXveSJehyV8xkpIxqr2AhENasni72SJ87tvMxc/3Q/wwLd2HbZ1dGUJ3UgNswkrWZ397I2Mdg3QVWNtoU2degQ6SWJ2jg8oLUelgdOyk0AlCP9CZvs+RB6SrwuLif69vxLBxz8znnJMt9ZoFkWP5lbbtztGqVa+usd0/uioJFgAZibTpijwi3+E/36i0= zaker@DESKTOP-UR1FMMS" >> /home/ansible/.ssh/authorized_keys
-      chown -R ansible:ansible /home/ansible/.ssh
-      chmod 700 /home/ansible/.ssh
-      chmod 600 /home/ansible/.ssh/authorized_keys
-      echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/ansible
     SHELL
   end
-
-  # Provision all VMs with ansible user and SSH key
-  config.vm.provision "shell", inline: <<-SHELL
-    useradd -m -s /bin/bash ansible
-    mkdir -p /home/ansible/.ssh
-    echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFv1AE+CK3IgqEO0+0jBgf7O3FmAM0/Gt9gc7+mVdJsJtxjh8LBQ5fyMn0MDO6plfjgE5bHbTH+zZzgqGgMKtwrnR8fk/+kCkTggCHldQVdS+TvQkQ9sP2LdfkACj49OwSDQPgB2j7qWaj+0bOHWGsfbMjZNka8Kh325mrhDBKCGwqWWiogTDR1ktknLH8YNlP/0gwzN7KCRpf16ePf5KNM/ydXqtEe+F/js/3bziyp2ofsF3eo9rTTDEoYwkAwop/QnzdvTuVp/ZQRvvb1d4ALOTZJ5YaEzr61KnoYbZAnyo4xmrm2USh2OsoVrm2P9uaCD/cXveSJehyV8xkpIxqr2AhENasni72SJ87tvMxc/3Q/wwLd2HbZ1dGUJ3UgNswkrWZ397I2Mdg3QVWNtoU2degQ6SWJ2jg8oLUelgdOyk0AlCP9CZvs+RB6SrwuLif69vxLBxz8znnJMt9ZoFkWP5lbbtztGqVa+usd0/uioJFgAZibTpijwi3+E/36i0= zaker@DESKTOP-UR1FMMS" >> /home/ansible/.ssh/authorized_keys
-    chown -R ansible:ansible /home/ansible/.ssh
-    chmod 700 /home/ansible/.ssh
-    chmod 600 /home/ansible/.ssh/authorized_keys
-    echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/ansible
-  SHELL
+  
 end
