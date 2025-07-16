@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
   # VM pgsql01
   config.vm.define "pgsql01" do |pgsql01|
     pgsql01.vm.hostname = "pgsql01"
-    pgsql1.vm.network "private_network", ip: "192.168.56.102"
+    pgsql01.vm.network "private_network", ip: "192.168.56.102"
     pgsql01.vm.network "forwarded_port", guest: 5432, host: 5432
     pgsql01.vm.provider "virtualbox" do |vb|
       vb.memory = "2048"
@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
   # VM pgsql02
   config.vm.define "pgsql02" do |pgsql02|
     pgsql02.vm.hostname = "pgsql02"
-    pgsql2.vm.network "private_network", ip: "192.168.56.103"
+    pgsql02.vm.network "private_network", ip: "192.168.56.103"
     pgsql02.vm.network "forwarded_port", guest: 5432, host: 5433
     pgsql02.vm.provider "virtualbox" do |vb|
       vb.memory = "2048"
@@ -37,7 +37,7 @@ Vagrant.configure("2") do |config|
   # VM docker01
   config.vm.define "docker01" do |docker01|
     docker01.vm.hostname = "docker01"
-    docker.vm.network "private_network", ip: "192.168.56.104"
+    docker01.vm.network "private_network", ip: "192.168.56.104"
     docker01.vm.network "forwarded_port", guest: 9090, host: 9090
     docker01.vm.network "forwarded_port", guest: 3000, host: 3000
     docker01.vm.provider "virtualbox" do |vb|
